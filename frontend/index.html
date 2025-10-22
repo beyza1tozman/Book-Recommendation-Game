@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookshop</title>
+    <link rel="icon" type="image/svg+xml" href="assets/icons/star.svg" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="main-container">
+        <img id="bookshop" src="assets/images/bookshop.png" />
+        <img id="bookshopowner" src="assets/images/owl.png" />
+    </div>
+
+    <div id="dialogueArea" class="dialogue-area">
+        <img id="dialogueImg" class="dialogue-img" src="assets/images/dialogue.png" />
+        <div id="dialogueText" class="dialogue-text">
+            <span class="close" id="closeDialogue">x</span>
+            Hi! Welcome to my bookshop! Enter a book title to get recommendations.
+            <button id="nextDialogue">Next</button>
+        </div>
+    </div>
+
+    <div id="recommendModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">x</span>
+            <h3>Enter a Book Name</h3>
+            <input type="text" id="bookInput" placeholder="Book title" />
+            <button id="submitBook">Get Recommendations</button>
+            <div id="results"></div>
+
+            <template id="bookCardTemplate">
+                <div class="book-card">
+                    <img src="" alt="cover" />
+                    <div>
+                        <strong></strong><br />
+                        <em></em>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>

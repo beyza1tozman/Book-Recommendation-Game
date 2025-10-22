@@ -1,0 +1,16 @@
+**/__pycache__/
+*.pyc
+*.pyd
+*.so
+*~
+
+*.pkl
+*.npy
+*.npz
+*.log
+
+.ipynb_checkpoints/
+
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,144 @@
+@font-face {
+    font-family: "Ellen";
+    src: url("assets/fonts/SueEllenFrancisco-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+* {
+    font-family: "Ellen";
+}
+
+::selection {
+    color: #ffffff;
+    background-color: #b49572;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: #96AFB7ff;
+    background-image: url('assets/images/wallpaper.jpg');
+    width: 100%;
+    overflow: hidden;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+}
+
+#bookshop {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+#bookshopowner {
+    position: absolute;
+    bottom: -8%;
+    left: 10%;
+    cursor: pointer;
+    width: 20%;
+    aspect-ratio: 2/3;
+}
+
+.dialogue-area {
+    display: none;
+    margin: 0 auto;
+    bottom: 20px;
+    position: absolute;
+    width: 90%;
+    max-width: 1200px;
+    min-width: 700px;
+}
+
+.dialogue-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 5/1;
+}
+
+.dialogue-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    font-size: clamp(1.5em, 3vw, 2.5em);
+    text-align: center;
+    overflow-wrap: break-word;
+    padding: 10px;
+}
+
+.dialogue-text button {
+    display: block;
+    font-size: 0.8em;
+    margin: 10px auto;
+}
+
+button:hover {
+    background-color: #4b6948;
+    color: #fff;
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #f0dec7;
+    border: 3px solid #d3c1a9;
+    padding: 1.5rem;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 40rem;
+    max-height: 80vh;
+    overflow-y: auto;
+    font-size: 1.5rem;
+}
+
+.modal-content input,
+.modal-content button {
+    font-size: inherit;
+    padding: 2% 4%;
+    font-weight: bold;
+}
+
+.close {
+    float: right;
+    font-size: 1.2em;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.book-card {
+    display: flex;
+    border: 3px solid #ccc;
+    background-color: #fff;
+    border-radius: 20px;
+    padding: 3%;
+    margin-top: 3%;
+    gap: 3%;
+    align-items: center;
+}
+
+.book-card img {
+    width: 12%;
+    height: auto;
+}
