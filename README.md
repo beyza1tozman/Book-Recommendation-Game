@@ -1,5 +1,7 @@
 # Book Recommendation Game 📚  
 
+<img width="500" alt="bookshop_img" src="https://github.com/user-attachments/assets/a0b6b1c4-1764-454f-b895-31c5af96bf5c" />
+
 A bookshop-themed web application that recommends books using content-based filtering.  
 
 Users can enter any book title to get suggestions based purely on content similarity, rather than crowd preferences or historical ratings.  
