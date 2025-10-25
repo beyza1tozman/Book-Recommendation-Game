@@ -34,7 +34,7 @@ submitBtn.addEventListener("click", async () => {
     const title = bookInput.value.trim();
 
     if (!title) {
-        resultsDiv.innerHTML = `<p style="color:red; margin: 10px 0;">Enter a book name!</p>`;
+        resultsDiv.innerHTML = `<p class="error-message">Enter a book name!</p>`;
         return;
     }
 
@@ -49,7 +49,7 @@ submitBtn.addEventListener("click", async () => {
 
         if (!response.ok) {
             const err = await response.json();
-            resultsDiv.innerHTML = `<p style="color:red;">${err.detail}</p>`;
+            resultsDiv.innerHTML = `<p class="error-message">${err.detail}</p>`;
             return;
         }
 
@@ -68,6 +68,6 @@ submitBtn.addEventListener("click", async () => {
         });
 
     } catch (err) {
-        resultsDiv.innerHTML = `<p style="color:red;">${err.message}</p>`;
+        resultsDiv.innerHTML = `<p class="error-message">${err.detail}</p>`;
     }
 });

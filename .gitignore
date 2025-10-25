@@ -10,6 +10,8 @@
 *.log
 
 .ipynb_checkpoints/
+venv/
+*.nbconvert.ipynb
 
 .DS_Store
 .vscode/

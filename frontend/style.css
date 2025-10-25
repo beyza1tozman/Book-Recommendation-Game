@@ -11,7 +11,7 @@
 
 ::selection {
     color: #ffffff;
-    background-color: #b49572;
+    background-color: #4b6948;
 }
 
 body {
@@ -21,8 +21,8 @@ body {
     padding: 0;
     align-items: center;
     justify-content: center;
-    background-color: #96AFB7ff;
-    background-image: url('assets/images/wallpaper.jpg');
+    background-color: #d8bd99;
+    /* background-image: url('assets/images/wallpaper.jpg'); */
     width: 100%;
     overflow: hidden;
 }
@@ -101,8 +101,8 @@ button:hover {
 }
 
 .modal-content {
-    background: #f0dec7;
-    border: 3px solid #d3c1a9;
+    background: #a3bec7;
+    border: 3px solid #869ba1;
     padding: 1.5rem;
     border-radius: 20px;
     width: 90%;
@@ -129,7 +129,7 @@ button:hover {
 
 .book-card {
     display: flex;
-    border: 3px solid #ccc;
+    border: 3px solid #869ba1;
     background-color: #fff;
     border-radius: 20px;
     padding: 3%;
@@ -141,4 +141,9 @@ button:hover {
 .book-card img {
     width: 12%;
     height: auto;
+}
+
+.error-message {
+    color: #B22222;
+    margin: 10px 0;
 }

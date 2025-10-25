@@ -56,12 +56,12 @@ def recommend_book(request: BookRequest):
     book_index = find_book_in_database(title)
     if book_index is not None:
         return get_recommendations_from_database(book_index)
-    
+        
     return get_recommendations_from_api(title)
 
 # database recommendations
 def find_book_in_database(title):
-    book_row = books[books['title'] == title]
+    book_row = books[books['title'] == title.lower().strip()]
     if not book_row.empty:
         print(f"Book '{title}' found in database.")
         return book_row.index[0]
