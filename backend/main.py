@@ -4,25 +4,33 @@ from pydantic import BaseModel
 import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+import os
 import pickle
 import requests
 from urllib.parse import quote
 from scipy.sparse import load_npz
 from difflib import SequenceMatcher
 
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# optional, but without a key requests share Google's anonymous quota, which often runs out
+GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY")
+
 # load data
 def load_model_data():
     try:
-        books = pd.read_pickle("books.pkl")
-        similarities = np.load("similarities.npy")
-        with open("tfidf_vectorizer.pkl", "rb") as f:
+        books = pd.read_pickle(os.path.join(BACKEND_DIR, "books.pkl"))
+        with open(os.path.join(BACKEND_DIR, "tfidf_vectorizer.pkl"), "rb") as f:
             tfidf = pickle.load(f)
-        tfidf_matrix = load_npz("tfidf_matrix.npz")
-        return books, similarities, tfidf, tfidf_matrix 
+        tfidf_matrix = load_npz(os.path.join(BACKEND_DIR, "tfidf_matrix.npz"))
+        return books, tfidf, tfidf_matrix
     except FileNotFoundError:
         raise FileNotFoundError("Make sure to save the data.")
 
-books, similarities, tfidf, tfidf_matrix = load_model_data()
+books, tfidf, tfidf_matrix = load_model_data()
+
+# serve covers over https so they load on the https frontend
+books['thumbnail'] = books['thumbnail'].str.replace('http://', 'https://', n=1, regex=False)
 
 # app setup
 app = FastAPI()
@@ -71,8 +79,11 @@ def find_book_in_database(title):
 def get_recommendations_from_database(book_index):
     print("Generating recommendations from database...")
     
+    # computing one row on demand instead of keeping the full 7k x 7k similarity matrix in memory
+    book_similarities = cosine_similarity(tfidf_matrix[book_index], tfidf_matrix).flatten()
+
     distances = sorted(
-        enumerate(similarities[book_index]), 
+        enumerate(book_similarities), 
         reverse=True, 
         key=lambda x: x[1]
     )
@@ -102,9 +113,15 @@ def fetch_book_data_from_google(title):
     try:
         encoded_title = quote(title)
         url = f"https://www.googleapis.com/books/v1/volumes?q={encoded_title}&maxResults=1"
+        if GOOGLE_BOOKS_API_KEY:
+            url += f"&key={GOOGLE_BOOKS_API_KEY}"
         
         response = requests.get(url, timeout=5)
         data = response.json()
+
+        if response.status_code != 200:
+            print(f"Google Books API error {response.status_code}: {data.get('error', {}).get('message')}")
+            return None
         
         if data.get('totalItems', 0) == 0:
             return None

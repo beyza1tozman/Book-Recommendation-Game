@@ -1,4 +1,8 @@
-const API_BASE_URL = "http://127.0.0.1:8000";
+const LOCAL_API_URL = "http://127.0.0.1:8000";
+const DEPLOYED_API_URL = "https://book-recommendation-game.onrender.com"; // your Render service URL
+
+const isLocal = ["localhost", "127.0.0.1", ""].includes(window.location.hostname);
+const API_BASE_URL = isLocal ? LOCAL_API_URL : DEPLOYED_API_URL;
 
 const bookshopOwner = document.getElementById("bookshopowner");
 const dialogueArea = document.getElementById("dialogueArea");
@@ -40,12 +44,18 @@ submitBtn.addEventListener("click", async () => {
 
     resultsDiv.innerHTML = "Loading...";
 
+    // the free server sleeps when idle, so the first request can take a while
+    const wakeUpNotice = setTimeout(() => {
+        resultsDiv.innerHTML = "Waking up the bookshop owner... this can take up to a minute.";
+    }, 5000);
+
     try {
         const response = await fetch(`${API_BASE_URL}/recommend_book`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ title })
         });
+        clearTimeout(wakeUpNotice);
 
         if (!response.ok) {
             const err = await response.json();
@@ -68,6 +78,7 @@ submitBtn.addEventListener("click", async () => {
         });
 
     } catch (err) {
-        resultsDiv.innerHTML = `<p class="error-message">${err.detail}</p>`;
+        clearTimeout(wakeUpNotice);
+        resultsDiv.innerHTML = `<p class="error-message">Couldn't reach the bookshop. Please try again in a moment.</p>`;
     }
 });

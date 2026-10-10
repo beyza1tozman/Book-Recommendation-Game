@@ -4,6 +4,9 @@
 
 A bookshop-themed web application that recommends books using content-based filtering.  
 
+**[▶ Play it live](https://beyza1tozman.github.io/Book-Recommendation-Game/)**  
+*(The backend runs on a free server that sleeps when idle, so the first search may take up to a minute.)*  
+
 Users can enter any book title to get suggestions based purely on content similarity, rather than crowd preferences or historical ratings.  
 
 The recommendation engine is built on a dataset of 7,000 books, using TF-IDF vectorization of book descriptions (after experimenting with Bag of Words) to create a cosine similarity matrix that powers all recommendations.  
@@ -34,6 +37,7 @@ pip install -r requirements.txt
 
 # Run Notebook to Generate Required Backend Files
 jupyter nbconvert --to notebook --execute notebooks/recommendation_engine.ipynb
+# (or without Jupyter: python backend/build_model.py)
 
 # Start Backend
 cd backend
@@ -42,6 +46,12 @@ fastapi dev main.py
 # Open Frontend
 # Open frontend/index.html in your browser
 ```
+
+Optionally, set a `GOOGLE_BOOKS_API_KEY` environment variable before starting the backend. Without one, lookups for books outside the dataset share Google's anonymous quota, which often runs out.
+
+## Deployment
+- **Frontend:** GitHub Pages, deployed from `frontend/` by `.github/workflows/pages.yml` on every push to `main`.
+- **Backend:** [Render](https://render.com), configured by `render.yaml`. The model files are generated at build time by `backend/build_model.py`.
 
 ## License   
 MIT
