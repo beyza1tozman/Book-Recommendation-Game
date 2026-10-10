@@ -69,26 +69,25 @@ def recommend_book(request: BookRequest):
 
 # database recommendations
 def find_book_in_database(title):
-    book_row = books[books['title'] == title.lower().strip()]
-    if not book_row.empty:
-        print(f"Book '{title}' found in database.")
-        return book_row.index[0]
-    
-    return None
+    book_rows = books[books['title'] == title.lower().strip()]
+    if book_rows.empty:
+        return None
+
+    # a title can appear several times, so use the copy with the most informative description
+    best_index = max(book_rows.index, key=lambda i: tfidf_matrix[i].nnz)
+    if tfidf_matrix[best_index].nnz == 0:
+        print(f"Book '{title}' found in database but has no description.")
+        return None
+
+    print(f"Book '{title}' found in database.")
+    return best_index
 
 def get_recommendations_from_database(book_index):
     print("Generating recommendations from database...")
     
     # computing one row on demand instead of keeping the full 7k x 7k similarity matrix in memory
     book_similarities = cosine_similarity(tfidf_matrix[book_index], tfidf_matrix).flatten()
-
-    distances = sorted(
-        enumerate(book_similarities), 
-        reverse=True, 
-        key=lambda x: x[1]
-    )
-    
-    return [books.iloc[i][['title', 'authors', 'thumbnail']].to_dict() for i, _ in distances[1:6]]
+    return top_recommendations(book_similarities, exclude_title=books.iloc[book_index]['title'])
 
 
 # api based recommendations
@@ -144,13 +143,26 @@ def generate_recommendations_for_new_book(book_data):
     
     new_book_tfidf = tfidf.transform([text_content])
     similarities_new = cosine_similarity(new_book_tfidf, tfidf_matrix).flatten()
-    top_indices = similarities_new.argsort()[-5:][::-1]
-    
-    return [books.iloc[idx][['title', 'authors', 'thumbnail']].to_dict() 
-            for idx in top_indices]
+    return top_recommendations(similarities_new, exclude_title=book_data['title'].lower())
 
 
 # utility functions
+def top_recommendations(similarity_scores, exclude_title, count=5):
+    # skips the searched book itself and duplicate copies of the same title
+    recommended_books = []
+    seen_titles = {exclude_title}
+    for idx in similarity_scores.argsort()[::-1]:
+        if similarity_scores[idx] <= 0:
+            break
+        book = books.iloc[idx]
+        if book['title'] in seen_titles:
+            continue
+        seen_titles.add(book['title'])
+        recommended_books.append(book[['title', 'authors', 'thumbnail']].to_dict())
+        if len(recommended_books) == count:
+            break
+    return recommended_books
+
 def is_valid_book_match(search_title, api_title, threshold= 0.6):
     title_similarity = SequenceMatcher(None, search_title.lower(), api_title.lower()).ratio()
     keyword_match = search_title.lower() in api_title.lower()

@@ -6,7 +6,7 @@ import pandas as pd
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, ENGLISH_STOP_WORDS
 from scipy.sparse import save_npz
 
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,7 +31,16 @@ books = books.apply(lambda col: col.fillna(0) if col.dtype == "float64" else col
 books["description"] = books["description"].apply(preprocess)
 books["title"] = books["title"].str.lower()
 
-tfidf = TfidfVectorizer(stop_words="english")
+# publishing/marketing words ("new york times bestseller", review quotes, awards) appear in
+# many descriptions and would otherwise make unrelated books look similar
+MARKETING_WORDS = {
+    "new", "york", "times", "bestseller", "bestselling", "best", "selling", "author", "authors",
+    "acclaimed", "award", "awards", "winning", "winner", "finalist", "prize", "pick", "picks",
+    "review", "reviews", "praise", "weekly", "magazine", "journal", "post", "tribune", "kirkus",
+    "publishers", "library", "edition", "copies", "sold", "readers", "major", "motion",
+    "picture", "starring", "directed", "screenplay", "film", "movie", "usa", "today",
+}
+tfidf = TfidfVectorizer(stop_words=list(ENGLISH_STOP_WORDS | MARKETING_WORDS))
 tfidf_matrix = tfidf.fit_transform(books["description"])
 
 books.to_pickle(os.path.join(BACKEND_DIR, "books.pkl"))

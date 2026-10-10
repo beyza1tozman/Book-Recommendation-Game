@@ -35,9 +35,9 @@ venv\Scripts\activate      # Windows (Linux/macOS: source venv/bin/activate)
 # Install Dependencies
 pip install -r requirements.txt
 
-# Run Notebook to Generate Required Backend Files
-jupyter nbconvert --to notebook --execute notebooks/recommendation_engine.ipynb
-# (or without Jupyter: python backend/build_model.py)
+# Generate Required Backend Files (same model as the live site)
+python backend/build_model.py
+# (notebooks/recommendation_engine.ipynb shows the exploration behind it)
 
 # Start Backend
 cd backend
