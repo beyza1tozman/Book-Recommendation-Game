@@ -9,9 +9,9 @@ A bookshop-themed web application that recommends books using content-based filt
 
 Users can enter any book title to get suggestions based purely on content similarity, rather than crowd preferences or historical ratings.  
 
-The recommendation engine is built on a dataset of 7,000 books, using TF-IDF vectorization of book descriptions (after experimenting with Bag of Words) to create a cosine similarity matrix that powers all recommendations.  
+The recommendation engine is built on a dataset of 7,000 books, using TF-IDF vectorization of book descriptions (after experimenting with Bag of Words) and cosine similarity to find the closest matches. Publishing and marketing phrases like "New York Times bestseller" or award mentions are filtered out, so books are matched on their stories rather than their blurbs. Similarities are computed on demand instead of storing the full similarity matrix, which keeps the server small enough for free hosting.  
 
-When a user searches for a book not in the database, its description is fetched from the Google Books API, vectorized, and compared against the existing matrix, effectively solving the cold start problem.  
+When a user searches for a book not in the database (or one without a description), its description is fetched from the Google Books API, vectorized, and compared against the existing TF-IDF vectors, effectively solving the cold start problem.  
 
 ## Tech Stack   
 - **Libraries:** Scikit-learn, Pandas, NumPy, NLTK, SciPy  
