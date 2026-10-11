@@ -34,6 +34,12 @@ closeModal.addEventListener("click", () => {
     resultsDiv.innerHTML = "";
 });
 
+bookInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        submitBtn.click();
+    }
+});
+
 submitBtn.addEventListener("click", async () => {
     const title = bookInput.value.trim();
 
