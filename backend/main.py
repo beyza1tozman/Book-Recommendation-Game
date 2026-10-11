@@ -7,14 +7,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 import os
 import pickle
 import requests
-from urllib.parse import quote
 from scipy.sparse import load_npz
 from difflib import SequenceMatcher
 
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # optional, but without a key requests share Google's anonymous quota, which often runs out
-GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY")
+GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY", "").strip() or None
+print(f"Google Books API key {'loaded' if GOOGLE_BOOKS_API_KEY else 'NOT set'}.")
+
+class BookLookupUnavailable(Exception):
+    """An external book API failed, as opposed to finding no such book."""
 
 # load data
 def load_model_data():
@@ -94,7 +97,7 @@ def get_recommendations_from_database(book_index):
 def get_recommendations_from_api(title):
     print(f"Book '{title}' not found in database. Fetching from API...")
     
-    book_data = fetch_book_data_from_google(title)
+    book_data = fetch_book_data(title)
     if not book_data:
         raise create_not_found_exception()
     
@@ -108,32 +111,79 @@ def get_recommendations_from_api(title):
     
     return recommended_books
 
-def fetch_book_data_from_google(title):
+def fetch_book_data(title):
+    # Google Books first, Open Library as a keyless fallback when Google is down or out of quota
+    google_failed = False
     try:
-        encoded_title = quote(title)
-        url = f"https://www.googleapis.com/books/v1/volumes?q={encoded_title}&maxResults=1"
-        if GOOGLE_BOOKS_API_KEY:
-            url += f"&key={GOOGLE_BOOKS_API_KEY}"
-        
-        response = requests.get(url, timeout=5)
-        data = response.json()
+        book_data = fetch_book_data_from_google(title)
+        if book_data and book_data['description'].strip():
+            return book_data
+    except BookLookupUnavailable as err:
+        print(f"Google Books unavailable: {err}")
+        google_failed = True
 
-        if response.status_code != 200:
-            print(f"Google Books API error {response.status_code}: {data.get('error', {}).get('message')}")
-            return None
-        
-        if data.get('totalItems', 0) == 0:
-            return None
-        
-        book_info = data['items'][0]['volumeInfo']
-        print(book_info)
-        return {
-            'title': book_info.get('title', ''),  
-            'description': book_info.get('description', ''),  
-        }
-    except Exception as err:
-        print(f"Error fetching book data: {err}")
+    try:
+        return fetch_book_data_from_open_library(title)
+    except BookLookupUnavailable as err:
+        print(f"Open Library unavailable: {err}")
+        if google_failed:
+            raise HTTPException(
+                status_code=503,
+                detail="Book lookup is temporarily unavailable. Please try again in a moment."
+            )
         return None
+
+def fetch_book_data_from_google(title):
+    params = {'q': title, 'maxResults': 1}
+    if GOOGLE_BOOKS_API_KEY:
+        params['key'] = GOOGLE_BOOKS_API_KEY
+
+    # Google Books returns sporadic 503s, so retry once before giving up
+    for attempt in range(2):
+        try:
+            response = requests.get("https://www.googleapis.com/books/v1/volumes", params=params, timeout=5)
+        except requests.RequestException as err:
+            raise BookLookupUnavailable(err)
+        if response.status_code == 200:
+            break
+        if response.status_code < 500 or attempt == 1:
+            raise BookLookupUnavailable(f"{response.status_code} {response.text[:300]}")
+
+    data = response.json()
+    if data.get('totalItems', 0) == 0:
+        return None
+
+    book_info = data['items'][0]['volumeInfo']
+    return {
+        'title': book_info.get('title', ''),
+        'description': book_info.get('description', ''),
+    }
+
+def fetch_book_data_from_open_library(title):
+    try:
+        search = requests.get(
+            "https://openlibrary.org/search.json",
+            params={'q': title, 'limit': 1, 'fields': 'key,title'},
+            timeout=5,
+        )
+        search.raise_for_status()
+        docs = search.json().get('docs', [])
+        if not docs:
+            return None
+
+        work = requests.get(f"https://openlibrary.org{docs[0]['key']}.json", timeout=5)
+        work.raise_for_status()
+        description = work.json().get('description', '')
+    except (requests.RequestException, ValueError) as err:
+        raise BookLookupUnavailable(err)
+
+    # descriptions come either as a plain string or as {"type": ..., "value": ...}
+    if isinstance(description, dict):
+        description = description.get('value', '')
+    return {
+        'title': docs[0].get('title', ''),
+        'description': description,
+    }
 
 def generate_recommendations_for_new_book(book_data):
     text_content = book_data['description'].strip()

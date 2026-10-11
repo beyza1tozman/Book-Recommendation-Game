@@ -51,7 +51,7 @@ fastapi dev main.py
 # Open frontend/index.html in your browser
 ```
 
-Optionally, set a `GOOGLE_BOOKS_API_KEY` environment variable before starting the backend. Without one, lookups for books outside the dataset share Google's anonymous quota, which often runs out.
+Optionally, set a `GOOGLE_BOOKS_API_KEY` environment variable before starting the backend. Without one, lookups for books outside the dataset share Google's anonymous quota, which often runs out. If Google Books is unavailable, the backend falls back to the Open Library API.
 
 ## Deployment
 - **Frontend:** GitHub Pages, deployed from `frontend/` by `.github/workflows/pages.yml` on every push to `main`.
